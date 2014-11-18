@@ -12,11 +12,9 @@ package brett;
  *  Modified on March 30, 2007 for Berkeley DB 4.3.28
  *
  */
-import com.sleepycat.db.*;
-import com.sleepycat.db.internal.Db;
+import java.util.Random;
 
-import java.io.*;
-import java.util.*;
+import com.sleepycat.db.*;
 
 
 public class Sample{
@@ -48,7 +46,7 @@ public class Sample{
 	    my_table.close();
 
 	    /* to remove the table */
-	    my_table.remove(SAMPLE_TABLE,null,null);
+	    Database.remove(SAMPLE_TABLE,null,null);
        
         }
         catch (Exception e1) {
