@@ -19,9 +19,11 @@ import com.sleepycat.db.*;
 
 public class Sample{
 
+	private static final String TEST_KEY = "oohiqwurgzsllzvhgigpxqwzbenyyjxuczmewrecjmxuvgjlzrnfxlmgzoilphatfquyyaadzvnztflneudhykt";
+	
 	// to specify the file name for the table
 	private static final String SAMPLE_TABLE = "/tmp/my_db/sample_table";
-	private static final int NO_RECORDS = 10;
+	private static final int NO_RECORDS = 100000;
 
 	/*
 	 *  the main function
@@ -33,7 +35,7 @@ public class Sample{
 			// Create the database object.
 			// There is no environment for this simple example.
 			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setType(DatabaseType.BTREE);
+			dbConfig.setType(DatabaseType.HASH);
 			dbConfig.setAllowCreate(true);
 			Database my_table = new Database(SAMPLE_TABLE, null, dbConfig);
 			System.out.println(SAMPLE_TABLE + " has been created");
@@ -41,8 +43,26 @@ public class Sample{
 			/* populate the new database with NO_RECORDS records */
 			populateTable(my_table,NO_RECORDS);
 			System.out.println(NO_RECORDS + " records inserted into" + SAMPLE_TABLE);
+			
+			String aKey = TEST_KEY;
+			DatabaseEntry key = new DatabaseEntry();
+		    DatabaseEntry data = new DatabaseEntry();
+			key.setData(aKey.getBytes());
+	        key.setSize(aKey.length());
+	        
+	        
+	        long startTime = System.nanoTime();
+	        if (my_table.get(null, key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS)
+	        {
+	          String b = new String (data.getData());
+	          System.out.println("\nData = " + b);  
+	        }
+	        long endTime = System.nanoTime();
 
-			/* cloase the database and the db enviornment */
+	        long duration = (endTime - startTime) / 1000;
+	        System.out.println("Time to execute: " + duration); 
+	        
+			/* close the database and the db environment */
 			my_table.close();
 
 			/* to remove the table */
@@ -85,7 +105,7 @@ public class Sample{
 				kdbt.setSize(s.length()); 
 
 				// to print out the key/data pair
-				System.out.println(s);	
+				//System.out.println(s);	
 
 				/* to generate a data string */
 				range = 64 + random.nextInt( 64 );
@@ -94,7 +114,7 @@ public class Sample{
 					s+=(new Character((char)(97+random.nextInt(26)))).toString();
 				}
 				
-				System.out.println(s);
+				//System.out.println(s);
 				/* to create a DBT for data */
 				ddbt = new DatabaseEntry(s.getBytes());
 				ddbt.setSize(s.length()); 
