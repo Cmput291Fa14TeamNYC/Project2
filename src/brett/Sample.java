@@ -19,7 +19,7 @@ import com.sleepycat.db.*;
 
 public class Sample{
 
-	private static final String TEST_KEY = "oohiqwurgzsllzvhgigpxqwzbenyyjxuczmewrecjmxuvgjlzrnfxlmgzoilphatfquyyaadzvnztflneudhykt";
+	private static final String TEST_KEY = "jfhxoqwmupwqulscczopqfclglsneokktzpoegoisxmihxeilbekgnyhryszbudxfizqknhevwtn";
 	
 	// to specify the file name for the table
 	private static final String SAMPLE_TABLE = "/tmp/my_db/sample_table";
@@ -35,7 +35,7 @@ public class Sample{
 			// Create the database object.
 			// There is no environment for this simple example.
 			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setType(DatabaseType.HASH);
+			dbConfig.setType(DatabaseType.BTREE);
 			dbConfig.setAllowCreate(true);
 			Database my_table = new Database(SAMPLE_TABLE, null, dbConfig);
 			System.out.println(SAMPLE_TABLE + " has been created");
@@ -60,7 +60,7 @@ public class Sample{
 	        long endTime = System.nanoTime();
 
 	        long duration = (endTime - startTime) / 1000;
-	        System.out.println("Time to execute: " + duration); 
+	        System.out.println("Time to execute: " + duration + " microseconds"); 
 	        
 			/* close the database and the db environment */
 			my_table.close();
@@ -105,7 +105,7 @@ public class Sample{
 				kdbt.setSize(s.length()); 
 
 				// to print out the key/data pair
-				//System.out.println(s);	
+				// System.out.println(s);	
 
 				/* to generate a data string */
 				range = 64 + random.nextInt( 64 );
@@ -114,7 +114,7 @@ public class Sample{
 					s+=(new Character((char)(97+random.nextInt(26)))).toString();
 				}
 				
-				//System.out.println(s);
+				// System.out.println(s);
 				/* to create a DBT for data */
 				ddbt = new DatabaseEntry(s.getBytes());
 				ddbt.setSize(s.length()); 
