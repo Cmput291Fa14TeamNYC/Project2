@@ -20,6 +20,10 @@ import com.sleepycat.db.*;
 public class Sample{
 
 	private static final String TEST_KEY = "jfhxoqwmupwqulscczopqfclglsneokktzpoegoisxmihxeilbekgnyhryszbudxfizqknhevwtn";
+	private static final String TEST_DATA = "woqlahmzrqlyhhjzdklmjqolkbhhiasczpgukpyobcwztbsffleukvbfdnqnubmorshieukeclbbtiecrafqfsocgwsfibbjgtkellpitbzrbvlscopizyidhaxdbrj";
+	private static final String UPPER_RANGE = "jab";
+	private static final String LOWER_RANGE = "jax";
+	
 	
 	private static int[] keyValues;
 	private static int[] dataValues;
@@ -49,6 +53,11 @@ public class Sample{
 			populateTable(my_table,NO_RECORDS);
 			System.out.println(NO_RECORDS + " records inserted into" + SAMPLE_TABLE);
 			
+			/*
+			 * KEY SEARCH
+			 */
+			
+			// Generate Key to search for
 			String aKey = TEST_KEY;
 			DatabaseEntry key = new DatabaseEntry();
 		    DatabaseEntry data = new DatabaseEntry();
@@ -56,16 +65,76 @@ public class Sample{
 	        key.setSize(aKey.length());
 	        
 
+	        // Time how long it takes to find the key and get its data
 	        long startTime = System.nanoTime();
-	        if (my_table.get(null, key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS)
-	        {
-	          String b = new String (data.getData());
-	          System.out.println("\nData = " + b);  
-	        }
-	        long endTime = System.nanoTime();
+	        if (my_table.get(null, key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+	        	
+	        	//Get time of success
+	        	long endTime = System.nanoTime();
+	        	
+	        	String b = new String (data.getData());
+	        	System.out.println("\nData From Key Search Found:" + b); 
 
+		        // Output the time of operation for get by key
+		        long duration = (endTime - startTime) / 1000;
+		        System.out.println("Time to execute: " + duration + " microseconds");
+		        
+	        }
+	        
+	        /*
+	         * Data Search
+	         */
+	        
+	        Cursor cursor = my_table.openCursor(null, null);
+	        key = new DatabaseEntry();
+	        data = new DatabaseEntry();
+	        
+	        startTime = System.nanoTime();
+	        while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+	        	
+	        	String printData = new String(data.getData());
+	        	
+	        	if (printData.equals(TEST_DATA)) {
+	        		long endTime = System.nanoTime();
+	        		System.out.println("\nData from Data Search Found: " + printData);
+	        		
+	        		long duration = (endTime - startTime) / 1000;
+			        System.out.println("Time to execute: " + duration + " microseconds\n");
+	        	}
+	        	
+	        }
+	        
+	        cursor.close();
+	        
+	        /*
+	         * Range Search
+	         */
+	        
+	        cursor = my_table.openCursor(null, null);
+	        key = new DatabaseEntry();
+	        data = new DatabaseEntry();
+	        
+	        startTime = System.nanoTime();
+	        int counter = 0;
+	        
+	        while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+	        	
+	        	String printKey = new String(key.getData());
+	        
+	        	if ( (printKey.compareTo(UPPER_RANGE) > 0) && (printKey.compareTo(LOWER_RANGE) < 0) ) {
+	        		System.out.println("Found key in Range Search: " + printKey);
+	        		counter ++;
+	        	}
+	        	
+	        }
+	        
+	        System.out.println("Keys found: " + counter);
+	        long endTime = System.nanoTime();
 	        long duration = (endTime - startTime) / 1000;
-	        System.out.println("Time to execute: " + duration + " microseconds"); 
+	        System.out.println("Time to execute: " + duration + " microseconds");
+	        
+	        
+	        cursor.close();
 	        
 			/* close the database and the db environment */
 			my_table.close();
