@@ -7,7 +7,6 @@ import java.util.Scanner;
 import com.sleepycat.db.*;
 
 public class DataSource {
-	private static final String TEST_DATA = "woqlahmzrqlyhhjzdklmjqolkbhhiasczpgukpyobcwztbsffleukvbfdnqnubmorshieukeclbbtiecrafqfsocgwsfibbjgtkellpitbzrbvlscopizyidhaxdbrj";
 	// to specify the file name for the table
 	private static final String SAMPLE_TABLE = "/Users/Yunita/My Documents/temp";
 	private static final int NO_RECORDS = 100000;
@@ -33,14 +32,14 @@ public class DataSource {
 			// Create the database object.
 			// There is no environment for this simple example.
 			DatabaseConfig dbConfig = new DatabaseConfig();
-			if(type.equals("btree")){
+			if (type.equals("btree")) {
 				dbConfig.setType(DatabaseType.BTREE);
 				System.out.println("Btree");
-			} else if(type.equals("hash")){
+			} else if (type.equals("hash")) {
 				dbConfig.setType(DatabaseType.HASH);
 				System.out.println("Hash");
 			}
-			
+
 			dbConfig.setAllowCreate(true);
 			my_table = new Database(SAMPLE_TABLE, null, dbConfig);
 			System.out.println(SAMPLE_TABLE + " has been created");
@@ -169,9 +168,6 @@ public class DataSource {
 	// Method: searchByData
 	// >> retrieve records with a given data
 	public void searchByData(String input) {
-		/*
-		 * BUG! Only work for TEST_DATA How do you get the TEST_DATA?
-		 */
 		try {
 			Cursor cursor = my_table.openCursor(null, null);
 
@@ -190,7 +186,10 @@ public class DataSource {
 					System.out.println("Time to execute: " + duration
 							+ " microseconds\n");
 				}
+				key = new DatabaseEntry();
+				data = new DatabaseEntry();
 			}
+
 			cursor.close();
 		} catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
@@ -218,12 +217,14 @@ public class DataSource {
 
 			while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 				String printKey = new String(key.getData());
-				if ((printKey.compareTo(upper) > 0)
-						&& (printKey.compareTo(lower) < 0)) {
+				if ((printKey.compareTo(lower) > 0)
+						&& (printKey.compareTo(upper) < 0)) {
 					System.out
 							.println("Found key in Range Search: " + printKey);
 					counter++;
 				}
+				key = new DatabaseEntry();
+				data = new DatabaseEntry();
 			}
 
 			System.out.println("Keys found: " + counter);
@@ -239,49 +240,52 @@ public class DataSource {
 		}
 	}
 
+	// Method: rangeSearchBtree
+	// >> find all the records whose key values are within a given range
+	// and return the number of records for btree
 	public void rangeSearchBtree(String lower, String upper) {
 		try {
-			Cursor cursor = my_table.openCursor(null, null);
-			key = new DatabaseEntry();
-			data = new DatabaseEntry();
-			key.setData(lower.getBytes());
-			key.setSize(lower.length());
-			
-			int counter = 0;
-			long startTime = System.nanoTime();
-
-			if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-				// Print first match
-				String printKey = new String(key.getData());
-				System.out
-						.println("Found key in New Range Search: " + printKey);
-				counter++;
-
-				// Find all next matches
+				Cursor cursor = my_table.openCursor(null, null);
 				key = new DatabaseEntry();
-				data = new DatabaseEntry();
-				while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-					printKey = new String(key.getData());
+			    data = new DatabaseEntry();
+				key.setData(lower.getBytes());
+		        key.setSize(lower.length());
+		        
+		        
+		        int counter = 0;
+		        long startTime = System.nanoTime();
+		        
+		        if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+		        	// Print first match
+		        	String printKey = new String(key.getData());
+		        	System.out.println("Found key in New Range Search: " + printKey);
+		        	counter++;
+				    
+		        	// Find all next matches
+		        	key = new DatabaseEntry();
+				    data = new DatabaseEntry();
+		        	while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+		        		printKey = new String(key.getData());
+		        		
+		        		if ( (printKey.compareTo(lower) > 0) && (printKey.compareTo(upper) < 0) ) {
+			        		System.out.println("Found key in New Range Search: " + printKey);
+			        		counter ++;
+			        	} else {
+			        		break;
+			        	}
+		        		
+		        		key = new DatabaseEntry();
+				        data = new DatabaseEntry();
+		        	}
+		        	
+		        }
+		        
+		        System.out.println("Keys found: " + counter);
+		        long endTime = System.nanoTime();
+		        long duration = (endTime - startTime) / 1000;
+		        System.out.println("Time to execute: " + duration + " microseconds");
 
-					if ((printKey.compareTo(lower) > 0)
-							&& (printKey.compareTo(upper) < 0)) {
-						System.out.println("Found key in Range Search: "
-								+ printKey);
-						counter++;
-					} else {
-						break;
-					}
-				}
-
-			}
-
-			System.out.println("Keys found: " + counter);
-			long endTime = System.nanoTime();
-			long duration = (endTime - startTime) / 1000;
-			System.out.println("Time to execute: " + duration
-					+ " microseconds\n");
-
-			cursor.close();
+		        cursor.close();
 		} catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
 		}

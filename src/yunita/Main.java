@@ -7,8 +7,8 @@ public class Main {
 	public Main(String args) {
 		DataSource ds = new DataSource();
 		try {
-			this.displayMenus();
 			while(true){
+				this.displayMenus();
 				System.out.print(">> ");
 				Scanner s = new Scanner(System.in);
 				int input = s.nextInt();
@@ -44,13 +44,15 @@ public class Main {
 					Scanner s2 = new Scanner(System.in);
 					
 					System.out.print("Lower >> ");
-					String upper = s1.nextLine();
+					String lower = s1.nextLine();
 					System.out.print("Upper >> ");
-					String lower = s2.nextLine();
+					String upper = s2.nextLine();
 					
 					if(args.equals("btree")){
+						System.out.println("BTREE SEARCH");
 						ds.rangeSearchBtree(lower, upper);
 					} else if(args.equals("hash")){
+						System.out.println("HASH SEARCH");
 						ds.rangeSearchHash(lower, upper);
 					}
 					break;
