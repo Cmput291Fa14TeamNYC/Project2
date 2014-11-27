@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Main {
 
-	public Main() {
+	public Main(String args) {
 		DataSource ds = new DataSource();
 		try {
 			this.displayMenus();
@@ -16,7 +16,7 @@ public class Main {
 				switch (input) {
 				case 1:
 					System.out.println("1 Create and populate a database");
-					ds.createDatabase();
+					ds.createDatabase(args);
 					break;
 				case 2:
 					System.out.println("2 Retrieve records with a given key");
@@ -43,12 +43,16 @@ public class Main {
 					Scanner s1 = new Scanner(System.in);
 					Scanner s2 = new Scanner(System.in);
 					
-					System.out.print("Upper >> ");
+					System.out.print("Lower >> ");
 					String upper = s1.nextLine();
-					System.out.print("lower >> ");
+					System.out.print("Upper >> ");
 					String lower = s2.nextLine();
 					
-					ds.rangeSearch(upper, lower);
+					if(args.equals("btree")){
+						ds.rangeSearchBtree(lower, upper);
+					} else if(args.equals("hash")){
+						ds.rangeSearchHash(lower, upper);
+					}
 					break;
 				case 5:
 					System.out.println("5. Destroy the database");
@@ -80,7 +84,9 @@ public class Main {
 	
 	public static void main(String[] args) {
 		System.out.println("Hello Yunita!");
-		Main m = new Main();
+		
+		//Run -> Run Config -> Argument -> btree 
+		Main m = new Main(args[0]);
 	}
 
 }
