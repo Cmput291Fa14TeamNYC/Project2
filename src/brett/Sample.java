@@ -24,6 +24,10 @@ public class Sample{
 	private static final String LOWER_RANGE = "jab";
 	private static final String UPPER_RANGE = "jax";
 	
+	private static int[] keyValues;
+	private static int[] dataValues;
+	
+	private static int randKeyValue1;
 	
 	// to specify the file name for the table
 	private static final String SAMPLE_TABLE = "/tmp/commande_db/sample_table";
@@ -45,7 +49,7 @@ public class Sample{
 			System.out.println(SAMPLE_TABLE + " has been created");
 
 			/* populate the new database with NO_RECORDS records */
-			populateTable(my_table,NO_RECORDS);
+			populateTable(my_table, null, NO_RECORDS);
 			System.out.println(NO_RECORDS + " records inserted into" + SAMPLE_TABLE);
 			
 			/*
@@ -59,6 +63,7 @@ public class Sample{
 			key.setData(aKey.getBytes());
 	        key.setSize(aKey.length());
 	        
+
 	        // Time how long it takes to find the key and get its data
 	        long startTime = System.nanoTime();
 	        if (my_table.get(null, key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
@@ -200,7 +205,7 @@ public class Sample{
 	/*
 	 *  To pouplate the given table with nrecs records
 	 */
-	static void populateTable(Database my_table, int nrecs ) {
+	static void populateTable(Database my_table, Database index_table, int nrecs ) {
 		int range;
 		DatabaseEntry kdbt, ddbt;
 		String s;
@@ -211,9 +216,28 @@ public class Sample{
 		 *
 		 *  Seed the random number once and once only.
 		 */
+		
+		Random randKey1 = new Random();
+		
+		
+		keyValues = new int[4];
+		dataValues = new int[4];
+		
+		
+		
 		Random random = new Random(1000000);
 
 		try {
+			
+			
+			
+			for(int k = 0; k < keyValues.length; k++){
+				randKeyValue1 = randKey1.nextInt(nrecs);	
+				keyValues[k] = randKeyValue1;
+
+			    System.out.println("KEY " + keyValues[k]);
+			}
+			
 			for (int i = 0; i < nrecs; i++) {
 
 				/* to generate a key string */
@@ -225,7 +249,8 @@ public class Sample{
 				/* to create a DBT for key */
 				kdbt = new DatabaseEntry(s.getBytes());
 				kdbt.setSize(s.length()); 
-
+				
+				
 				// to print out the key/data pair
 				//System.out.println(s);	
 
@@ -243,6 +268,19 @@ public class Sample{
 
 				/* to insert the key/data pair into the database */
 				my_table.putNoOverwrite(null, kdbt, ddbt);
+				
+				if (index_table != null) {
+					index_table.put(null, ddbt, kdbt);
+				}
+				
+				for (int j = 0; j < keyValues.length; j++) {
+					if (i == keyValues[j]) {
+						String key = new String(kdbt.getData());
+						String data = new String(ddbt.getData());
+						System.out.println(key + " " + data);
+					}
+				}
+				
 			}
 		}
 		catch (DatabaseException dbe) {
