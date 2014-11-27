@@ -20,11 +20,13 @@ import com.sleepycat.db.*;
 public class Sample{
 
 	private static final String TEST_KEY = "jfhxoqwmupwqulscczopqfclglsneokktzpoegoisxmihxeilbekgnyhryszbudxfizqknhevwtn";
-	private static final String TEST_DATA = "blioapsarvpvqrqhczukxdgilcmdrsexaannxuycaqmmhoguasncevpuawzxtpasbbgryugwyrnnqezvsblyetngiuwxhkzibhplauuieqeckrqyvnsapmuekzapgca";
-	private static final String LOWER_RANGE = "jab";
-	private static final String UPPER_RANGE = "jax";
+
+	private static final String TEST_DATA = "bbmnfgntfghyxvcqyxfaquptpsjfbkxhbmieryrldlshglyocdrcvusmqmpcchkzoidslxqblghkyonajugpujoijhsupmo";
+	private static final String UPPER_RANGE = "jab";
+	private static final String LOWER_RANGE = "jax";
+
 	private static final int PREFIX_LENGTH = 3;
-	
+
 	
 	private static int[] keyValues;
 	private static int[] dataValues;
@@ -33,6 +35,7 @@ public class Sample{
 	
 	// to specify the file name for the table
 	private static final String SAMPLE_TABLE = "/tmp/user_db/sample_table";
+
 	private static final int NO_RECORDS = 100000;
 
 	/*

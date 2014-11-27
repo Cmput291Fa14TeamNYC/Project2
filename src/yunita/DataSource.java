@@ -2,11 +2,12 @@ package yunita;
 
 import java.io.FileNotFoundException;
 import java.util.Random;
+import java.util.Scanner;
 
 import com.sleepycat.db.*;
 
 public class DataSource {
-
+	private static final String TEST_DATA = "woqlahmzrqlyhhjzdklmjqolkbhhiasczpgukpyobcwztbsffleukvbfdnqnubmorshieukeclbbtiecrafqfsocgwsfibbjgtkellpitbzrbvlscopizyidhaxdbrj";
 	// to specify the file name for the table
 	private static final String SAMPLE_TABLE = "/Users/Yunita/My Documents/temp";
 	private static final int NO_RECORDS = 100000;
@@ -14,7 +15,6 @@ public class DataSource {
 	private Database my_table = null;
 	private DatabaseEntry key = null;
 	private DatabaseEntry data = null;
-	private Cursor cursor = null;
 
 	private String[] keyValues;
 	private String[] dataValues;
@@ -33,7 +33,7 @@ public class DataSource {
 			// Create the database object.
 			// There is no environment for this simple example.
 			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setType(DatabaseType.HASH);
+			dbConfig.setType(DatabaseType.BTREE);
 			dbConfig.setAllowCreate(true);
 			my_table = new Database(SAMPLE_TABLE, null, dbConfig);
 			System.out.println(SAMPLE_TABLE + " has been created");
@@ -55,10 +55,10 @@ public class DataSource {
 		// DatabaseEntry kdbt, ddbt;
 		String s;
 
-		keyValues = new String [4];
-		dataValues = new String [4];
+		keyValues = new String[4];
+		dataValues = new String[4];
 		int[] index = this.randomIndex();
-		
+
 		/*
 		 * generate a random string with the length between 64 and 127,
 		 * inclusive.
@@ -68,7 +68,7 @@ public class DataSource {
 		Random random = new Random(1000000);
 
 		try {
-			
+
 			for (int i = 0; i < nrecs; i++) {
 
 				/* to generate a key string */
@@ -106,7 +106,6 @@ public class DataSource {
 					if (i == index[j]) {
 						keyValues[j] = new String(key.getData());
 						dataValues[j] = new String(data.getData());
-						System.out.println(keyValues[j] + " -> " + dataValues[j]);
 					}
 				}
 			}
@@ -125,14 +124,79 @@ public class DataSource {
 		for (int k = 0; k < index.length; k++) {
 			int randKeyValue1 = randKey1.nextInt(NO_RECORDS);
 			index[k] = randKeyValue1;
-			System.out.println("Random value: " + index[k]);
+			// System.out.println("Random value: " + index[k]);
 		}
 		return index;
 	}
 
-	//
-	public String getData() {
-		return keyValues[0];
+	// method: searchByKey
+	// >> retrieve records with a given key
+	public void searchByKey(String input) {
+		try {
+			key = new DatabaseEntry();
+			data = new DatabaseEntry();
+			key.setData(input.getBytes());
+			key.setSize(input.length());
+
+			// Time how long it takes to find the key and get its data
+			long startTime = System.nanoTime();
+
+			if (my_table.get(null, key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+
+				// Get time of success
+				long endTime = System.nanoTime();
+
+				String b = new String(data.getData());
+				System.out.println("Data From Key Search Found:" + b);
+
+				// Output the time of operation for get by key
+				long duration = (endTime - startTime) / 1000;
+				System.out.println("Time to execute: " + duration
+						+ " microseconds");
+			}
+		} catch (Exception e1) {
+			System.err.println("Test failed: " + e1.toString());
+		}
+	}
+
+	// Method: searchByData
+	// >> retrieve records with a given data
+	public void searchByData(String input) {
+		/*
+		 * BUG!
+		 * Only work for TEST_DATA
+		 * How do you get the TEST_DATA?
+		 */
+		try {
+			Cursor cursor = my_table.openCursor(null, null);
+
+			key = new DatabaseEntry();
+			data = new DatabaseEntry();
+
+			long startTime = System.nanoTime();
+			while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+				String keyString = new String(key.getData());
+				String dataString = new String(data.getData());
+				if (dataString.equals(input)) {
+					long endTime = System.nanoTime();
+					System.out.println("Key | Data : " + keyString + " | "
+							+ dataString + "");
+					long duration = (endTime - startTime) / 1000;
+					System.out.println("Time to execute: " + duration
+							+ " microseconds\n");
+				}
+			}
+			cursor.close();
+		} catch (Exception e1) {
+			System.err.println("Test failed: " + e1.toString());
+		}
+	}
+
+	public void printKeyData() {
+		String s = "";
+		for (int i = 0; i < keyValues.length; i++) {
+			System.out.println(keyValues[i] + " -> " + dataValues[i]);
+		}
 	}
 
 	// Method: rangeSearch
@@ -140,7 +204,7 @@ public class DataSource {
 	// and return the number of records
 	public void rangeSearch(String UPPER_RANGE, String LOWER_RANGE) {
 		try {
-			cursor = my_table.openCursor(null, null);
+			Cursor cursor = my_table.openCursor(null, null);
 			key = new DatabaseEntry();
 			data = new DatabaseEntry();
 
@@ -167,25 +231,6 @@ public class DataSource {
 			cursor.close();
 		} catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
-		}
-	}
-
-	/* SAMPLE ITERATION METHOD */
-	public void iterateDatabase() {
-		try {
-			Cursor cursor = my_table.openCursor(null, null);
-
-			DatabaseEntry foundKey = new DatabaseEntry();
-			DatabaseEntry foundData = new DatabaseEntry();
-
-			while (cursor.getNext(foundKey, foundData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-				String keyString = new String(foundKey.getData());
-				String dataString = new String(foundData.getData());
-				System.out.println("Key | Data : " + keyString + " | "
-						+ dataString + "");
-			}
-		} catch (DatabaseException e) {
-			e.printStackTrace();
 		}
 	}
 

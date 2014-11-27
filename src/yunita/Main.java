@@ -20,11 +20,23 @@ public class Main {
 					break;
 				case 2:
 					System.out.println("2 Retrieve records with a given key");
-					//
+					System.out.println("Automatic random generate key -> value: ");
+					ds.printKeyData();
+					
+					System.out.print("key >> ");
+					Scanner s3 = new Scanner(System.in);
+					String input2 = s3.nextLine();
+					ds.searchByKey(input2);
 					break;
 				case 3:
 					System.out.println("3 Retrieve records with a given data");
-					//
+					System.out.println("Automatic random generate key -> value: ");
+					ds.printKeyData();
+					
+					System.out.print("data >> ");
+					Scanner s4 = new Scanner(System.in);
+					String input3 = s4.nextLine();
+					ds.searchByData(input3);
 					break;
 				case 4:
 					System.out.println("4. Retrieve records with a given range of key values");
