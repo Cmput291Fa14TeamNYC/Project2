@@ -26,8 +26,13 @@ public class Sample{
 	private static final int PREFIX_LENGTH = 3;
 	
 	
+	private static int[] keyValues;
+	private static int[] dataValues;
+	
+	private static int randKeyValue1;
+	
 	// to specify the file name for the table
-	private static final String SAMPLE_TABLE = "/tmp/my_db/sample_table";
+	private static final String SAMPLE_TABLE = "/tmp/user_db/sample_table";
 	private static final int NO_RECORDS = 100000;
 
 	/*
@@ -60,6 +65,7 @@ public class Sample{
 			key.setData(aKey.getBytes());
 	        key.setSize(aKey.length());
 	        
+
 	        // Time how long it takes to find the key and get its data
 	        long startTime = System.nanoTime();
 	        if (my_table.get(null, key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
@@ -201,9 +207,28 @@ public class Sample{
 		 *
 		 *  Seed the random number once and once only.
 		 */
+		
+		Random randKey1 = new Random();
+		
+		
+		keyValues = new int[4];
+		dataValues = new int[4];
+		
+		
+		
 		Random random = new Random(1000000);
 
 		try {
+			
+			
+			
+			for(int k = 0; k < keyValues.length; k++){
+				randKeyValue1 = randKey1.nextInt(nrecs);	
+				keyValues[k] = randKeyValue1;
+
+			    System.out.println("KEY " + keyValues[k]);
+			}
+			
 			for (int i = 0; i < nrecs; i++) {
 
 				/* to generate a key string */
@@ -215,9 +240,10 @@ public class Sample{
 				/* to create a DBT for key */
 				kdbt = new DatabaseEntry(s.getBytes());
 				kdbt.setSize(s.length()); 
-
+				
+				
 				// to print out the key/data pair
-				// System.out.println(s);	
+				 //System.out.println(s);	
 
 				/* to generate a data string */
 				range = 64 + random.nextInt( 64 );
@@ -233,7 +259,17 @@ public class Sample{
 
 				/* to insert the key/data pair into the database */
 				my_table.putNoOverwrite(null, kdbt, ddbt);
+				
+				for (int j = 0; j < keyValues.length; j++) {
+					if (i == keyValues[j]) {
+						String key = new String(kdbt.getData());
+						String data = new String(ddbt.getData());
+						System.out.println(key + " " + data);
+					}
+				}
+				
 			}
+			
 		}
 		catch (DatabaseException dbe) {
 			System.err.println("Populate the table: "+dbe.toString());
