@@ -277,7 +277,7 @@ public class Sample{
 		}
 	}
 	
-	static void populateIndexFile(Database db1, Database db2, int nrecs ) {
+	static void populateTableIndexFile(Database db1, Database db2, int nrecs ) {
 		int range;
 		DatabaseEntry kdbt, ddbt;
 		String s;
@@ -300,16 +300,8 @@ public class Sample{
 					s+=(new Character((char)(97+random.nextInt(26)))).toString();
 
 				/* to create a DBT for key */
-				
-				String sprefix = s.substring(0, PREFIX_LENGTH);
-				
 				kdbt = new DatabaseEntry(s.getBytes());
-				kdbt.setSize(s.length());
-				
-				ddbt = new DatabaseEntry(sprefix.getBytes());
-				ddbt.setSize(sprefix.length());
-				
-				db2.put(null, kdbt, ddbt);
+				kdbt.setSize(s.length()); 
 
 				// to print out the key/data pair
 				// System.out.println(s);	
@@ -328,6 +320,7 @@ public class Sample{
 
 				/* to insert the key/data pair into the database */
 				db1.putNoOverwrite(null, kdbt, ddbt);
+				db2.put(null, ddbt, kdbt);
 			}
 		}
 		catch (DatabaseException dbe) {
