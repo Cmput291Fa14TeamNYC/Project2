@@ -54,7 +54,7 @@ public class Sample{
 			System.out.println(SAMPLE_TABLE + " has been created");
 
 			/* populate the new database with NO_RECORDS records */
-			populateTable(my_table,NO_RECORDS);
+			populateTable(my_table, null, NO_RECORDS);
 			System.out.println(NO_RECORDS + " records inserted into" + SAMPLE_TABLE);
 			
 			/*
@@ -199,7 +199,7 @@ public class Sample{
 	/*
 	 *  To pouplate the given table with nrecs records
 	 */
-	static void populateTable(Database my_table, int nrecs ) {
+	static void populateTable(Database my_table, Database index_table, int nrecs ) {
 		int range;
 		DatabaseEntry kdbt, ddbt;
 		String s;
@@ -263,6 +263,10 @@ public class Sample{
 				/* to insert the key/data pair into the database */
 				my_table.putNoOverwrite(null, kdbt, ddbt);
 				
+				if (index_table != null) {
+					index_table.put(null, ddbt, kdbt);
+				}
+				
 				for (int j = 0; j < keyValues.length; j++) {
 					if (i == keyValues[j]) {
 						String key = new String(kdbt.getData());
@@ -273,58 +277,6 @@ public class Sample{
 				
 			}
 			
-		}
-		catch (DatabaseException dbe) {
-			System.err.println("Populate the table: "+dbe.toString());
-			System.exit(1);
-		}
-	}
-	
-	static void populateTableIndexFile(Database db1, Database db2, int nrecs ) {
-		int range;
-		DatabaseEntry kdbt, ddbt;
-		String s;
-
-		/*  
-		 *  generate a random string with the length between 64 and 127,
-		 *  inclusive.
-		 *
-		 *  Seed the random number once and once only.
-		 */
-		Random random = new Random(1000000);
-
-		try {
-			for (int i = 0; i < nrecs; i++) {
-
-				/* to generate a key string */
-				range = 64 + random.nextInt( 64 );
-				s = "";
-				for ( int j = 0; j < range; j++ ) 
-					s+=(new Character((char)(97+random.nextInt(26)))).toString();
-
-				/* to create a DBT for key */
-				kdbt = new DatabaseEntry(s.getBytes());
-				kdbt.setSize(s.length()); 
-
-				// to print out the key/data pair
-				// System.out.println(s);	
-
-				/* to generate a data string */
-				range = 64 + random.nextInt( 64 );
-				s = "";
-				for ( int j = 0; j < range; j++ ) {
-					s+=(new Character((char)(97+random.nextInt(26)))).toString();
-				}
-				
-				// System.out.println(s);
-				/* to create a DBT for data */
-				ddbt = new DatabaseEntry(s.getBytes());
-				ddbt.setSize(s.length()); 
-
-				/* to insert the key/data pair into the database */
-				db1.putNoOverwrite(null, kdbt, ddbt);
-				db2.put(null, ddbt, kdbt);
-			}
 		}
 		catch (DatabaseException dbe) {
 			System.err.println("Populate the table: "+dbe.toString());
