@@ -31,7 +31,7 @@ public class Sample{
 	private static int randKeyValue1;
 	
 	// to specify the file name for the table
-	private static final String SAMPLE_TABLE = "/Users/Nancy/tmp/sample_table";
+	private static final String SAMPLE_TABLE = "/tmp/user_db/sample_table";
 	private static final int NO_RECORDS = 100000;
 
 	/*
