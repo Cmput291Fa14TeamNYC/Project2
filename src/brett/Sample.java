@@ -20,14 +20,13 @@ import com.sleepycat.db.*;
 public class Sample{
 
 	private static final String TEST_KEY = "jfhxoqwmupwqulscczopqfclglsneokktzpoegoisxmihxeilbekgnyhryszbudxfizqknhevwtn";
-	private static final String TEST_DATA = "blioapsarvpvqrqhczukxdgilcmdrsexaannxuycaqmmhoguasncevpuawzxtpasbbgryugwyrnnqezvsblyetngiuwxhkzibhplauuieqeckrqyvnsapmuekzapgca";
+	private static final String TEST_DATA = "bbmnfgntfghyxvcqyxfaquptpsjfbkxhbmieryrldlshglyocdrcvusmqmpcchkzoidslxqblghkyonajugpujoijhsupmo";
 	private static final String LOWER_RANGE = "jab";
 	private static final String UPPER_RANGE = "jax";
-	private static final int PREFIX_LENGTH = 3;
 	
 	
 	// to specify the file name for the table
-	private static final String SAMPLE_TABLE = "/tmp/my_db/sample_table";
+	private static final String SAMPLE_TABLE = "/tmp/commande_db/sample_table";
 	private static final int NO_RECORDS = 100000;
 
 	/*
@@ -40,7 +39,7 @@ public class Sample{
 			// Create the database object.
 			// There is no environment for this simple example.
 			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setType(DatabaseType.HASH);
+			dbConfig.setType(DatabaseType.BTREE);
 			dbConfig.setAllowCreate(true);
 			Database my_table = new Database(SAMPLE_TABLE, null, dbConfig);
 			System.out.println(SAMPLE_TABLE + " has been created");
@@ -87,7 +86,10 @@ public class Sample{
 	        startTime = System.nanoTime();
 	        while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 	        	
+	        	String printKey = new String(key.getData());
 	        	String printData = new String(data.getData());
+	        	//System.out.println(printKey);
+	        	//System.out.println(printData);
 	        	
 	        	if (printData.equals(TEST_DATA)) {
 	        		long endTime = System.nanoTime();
@@ -97,6 +99,9 @@ public class Sample{
 			        System.out.println("Time to execute: " + duration + " microseconds\n");
 			        break;
 	        	}
+	        	
+	        	key = new DatabaseEntry();
+		        data = new DatabaseEntry();
 	        	
 	        }
 	        
@@ -121,6 +126,8 @@ public class Sample{
 	        		counter ++;
 	        	}
 	        	
+	        	key = new DatabaseEntry();
+		        data = new DatabaseEntry();
 	        }
 	        
 	        System.out.println("Keys found: " + counter);
@@ -157,11 +164,14 @@ public class Sample{
 	        		printKey = new String(key.getData());
 	        		
 	        		if ( (printKey.compareTo(LOWER_RANGE) > 0) && (printKey.compareTo(UPPER_RANGE) < 0) ) {
-		        		System.out.println("Found key in Range Search: " + printKey);
+		        		System.out.println("Found key in New Range Search: " + printKey);
 		        		counter ++;
 		        	} else {
 		        		break;
 		        	}
+	        		
+	        		key = new DatabaseEntry();
+			        data = new DatabaseEntry();
 	        	}
 	        	
 	        }
@@ -217,7 +227,7 @@ public class Sample{
 				kdbt.setSize(s.length()); 
 
 				// to print out the key/data pair
-				// System.out.println(s);	
+				//System.out.println(s);	
 
 				/* to generate a data string */
 				range = 64 + random.nextInt( 64 );
@@ -226,72 +236,13 @@ public class Sample{
 					s+=(new Character((char)(97+random.nextInt(26)))).toString();
 				}
 				
-				// System.out.println(s);
+				//System.out.println(s);
 				/* to create a DBT for data */
 				ddbt = new DatabaseEntry(s.getBytes());
 				ddbt.setSize(s.length()); 
 
 				/* to insert the key/data pair into the database */
 				my_table.putNoOverwrite(null, kdbt, ddbt);
-			}
-		}
-		catch (DatabaseException dbe) {
-			System.err.println("Populate the table: "+dbe.toString());
-			System.exit(1);
-		}
-	}
-	
-	static void populateIndexFile(Database db1, Database db2, int nrecs ) {
-		int range;
-		DatabaseEntry kdbt, ddbt;
-		String s;
-
-		/*  
-		 *  generate a random string with the length between 64 and 127,
-		 *  inclusive.
-		 *
-		 *  Seed the random number once and once only.
-		 */
-		Random random = new Random(1000000);
-
-		try {
-			for (int i = 0; i < nrecs; i++) {
-
-				/* to generate a key string */
-				range = 64 + random.nextInt( 64 );
-				s = "";
-				for ( int j = 0; j < range; j++ ) 
-					s+=(new Character((char)(97+random.nextInt(26)))).toString();
-
-				/* to create a DBT for key */
-				
-				String sprefix = s.substring(0, PREFIX_LENGTH);
-				
-				kdbt = new DatabaseEntry(s.getBytes());
-				kdbt.setSize(s.length());
-				
-				ddbt = new DatabaseEntry(sprefix.getBytes());
-				ddbt.setSize(sprefix.length());
-				
-				db2.put(null, kdbt, ddbt);
-
-				// to print out the key/data pair
-				// System.out.println(s);	
-
-				/* to generate a data string */
-				range = 64 + random.nextInt( 64 );
-				s = "";
-				for ( int j = 0; j < range; j++ ) {
-					s+=(new Character((char)(97+random.nextInt(26)))).toString();
-				}
-				
-				// System.out.println(s);
-				/* to create a DBT for data */
-				ddbt = new DatabaseEntry(s.getBytes());
-				ddbt.setSize(s.length()); 
-
-				/* to insert the key/data pair into the database */
-				db1.putNoOverwrite(null, kdbt, ddbt);
 			}
 		}
 		catch (DatabaseException dbe) {
