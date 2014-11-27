@@ -20,10 +20,13 @@ import com.sleepycat.db.*;
 public class Sample{
 
 	private static final String TEST_KEY = "jfhxoqwmupwqulscczopqfclglsneokktzpoegoisxmihxeilbekgnyhryszbudxfizqknhevwtn";
+
 	private static final String TEST_DATA = "bbmnfgntfghyxvcqyxfaquptpsjfbkxhbmieryrldlshglyocdrcvusmqmpcchkzoidslxqblghkyonajugpujoijhsupmo";
 	private static final String UPPER_RANGE = "jab";
 	private static final String LOWER_RANGE = "jax";
-	
+
+	private static final int PREFIX_LENGTH = 3;
+
 	
 	private static int[] keyValues;
 	private static int[] dataValues;
@@ -31,7 +34,8 @@ public class Sample{
 	private static int randKeyValue1;
 	
 	// to specify the file name for the table
-	private static final String SAMPLE_TABLE = "/Users/Nancy/temp/sample_table";
+	private static final String SAMPLE_TABLE = "/tmp/user_db/sample_table";
+
 	private static final int NO_RECORDS = 100000;
 
 	/*
@@ -44,7 +48,7 @@ public class Sample{
 			// Create the database object.
 			// There is no environment for this simple example.
 			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setType(DatabaseType.BTREE);
+			dbConfig.setType(DatabaseType.HASH);
 			dbConfig.setAllowCreate(true);
 			Database my_table = new Database(SAMPLE_TABLE, null, dbConfig);
 			System.out.println(SAMPLE_TABLE + " has been created");
@@ -73,7 +77,7 @@ public class Sample{
 	        	long endTime = System.nanoTime();
 	        	
 	        	String b = new String (data.getData());
-	        	System.out.println("\nData From Key Search Found:" + b); 
+	        	System.out.println("\nData From Key Search Found: " + b); 
 
 		        // Output the time of operation for get by key
 		        long duration = (endTime - startTime) / 1000;
@@ -100,6 +104,7 @@ public class Sample{
 	        		
 	        		long duration = (endTime - startTime) / 1000;
 			        System.out.println("Time to execute: " + duration + " microseconds\n");
+			        break;
 	        	}
 	        	
 	        }
@@ -107,7 +112,7 @@ public class Sample{
 	        cursor.close();
 	        
 	        /*
-	         * Range Search
+	         * Range Search -- USE FOR HASH
 	         */
 	        
 	        cursor = my_table.openCursor(null, null);
@@ -116,12 +121,11 @@ public class Sample{
 	        
 	        startTime = System.nanoTime();
 	        int counter = 0;
-	        
 	        while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 	        	
 	        	String printKey = new String(key.getData());
 	        
-	        	if ( (printKey.compareTo(UPPER_RANGE) > 0) && (printKey.compareTo(LOWER_RANGE) < 0) ) {
+	        	if ( (printKey.compareTo(LOWER_RANGE) > 0) && (printKey.compareTo(UPPER_RANGE) < 0) ) {
 	        		System.out.println("Found key in Range Search: " + printKey);
 	        		counter ++;
 	        	}
@@ -131,9 +135,51 @@ public class Sample{
 	        System.out.println("Keys found: " + counter);
 	        long endTime = System.nanoTime();
 	        long duration = (endTime - startTime) / 1000;
-	        System.out.println("Time to execute: " + duration + " microseconds");
+	        System.out.println("Time to execute: " + duration + " microseconds\n");
+
+	        cursor.close();
 	        
+	        /*
+	         * New Range Search -- ONLY WORKS ON BTREE
+	         */
 	        
+	        aKey = LOWER_RANGE;
+			key = new DatabaseEntry();
+		    data = new DatabaseEntry();
+			key.setData(aKey.getBytes());
+	        key.setSize(aKey.length());
+	        
+	        cursor = my_table.openCursor(null, null);
+	        counter = 0;
+	        startTime = System.nanoTime();
+	        
+	        if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+	        	// Print first match
+	        	String printKey = new String(key.getData());
+	        	System.out.println("Found key in New Range Search: " + printKey);
+	        	counter++;
+			    
+	        	// Find all next matches
+	        	key = new DatabaseEntry();
+			    data = new DatabaseEntry();
+	        	while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+	        		printKey = new String(key.getData());
+	        		
+	        		if ( (printKey.compareTo(LOWER_RANGE) > 0) && (printKey.compareTo(UPPER_RANGE) < 0) ) {
+		        		System.out.println("Found key in Range Search: " + printKey);
+		        		counter ++;
+		        	} else {
+		        		break;
+		        	}
+	        	}
+	        	
+	        }
+	        
+	        System.out.println("Keys found: " + counter);
+	        endTime = System.nanoTime();
+	        duration = (endTime - startTime) / 1000;
+	        System.out.println("Time to execute: " + duration + " microseconds\n");
+
 	        cursor.close();
 	        
 			/* close the database and the db environment */
@@ -145,6 +191,7 @@ public class Sample{
 		}
 		catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
+			e1.printStackTrace();
 		}
 	}
 
@@ -226,6 +273,65 @@ public class Sample{
 				
 			}
 			
+		}
+		catch (DatabaseException dbe) {
+			System.err.println("Populate the table: "+dbe.toString());
+			System.exit(1);
+		}
+	}
+	
+	static void populateIndexFile(Database db1, Database db2, int nrecs ) {
+		int range;
+		DatabaseEntry kdbt, ddbt;
+		String s;
+
+		/*  
+		 *  generate a random string with the length between 64 and 127,
+		 *  inclusive.
+		 *
+		 *  Seed the random number once and once only.
+		 */
+		Random random = new Random(1000000);
+
+		try {
+			for (int i = 0; i < nrecs; i++) {
+
+				/* to generate a key string */
+				range = 64 + random.nextInt( 64 );
+				s = "";
+				for ( int j = 0; j < range; j++ ) 
+					s+=(new Character((char)(97+random.nextInt(26)))).toString();
+
+				/* to create a DBT for key */
+				
+				String sprefix = s.substring(0, PREFIX_LENGTH);
+				
+				kdbt = new DatabaseEntry(s.getBytes());
+				kdbt.setSize(s.length());
+				
+				ddbt = new DatabaseEntry(sprefix.getBytes());
+				ddbt.setSize(sprefix.length());
+				
+				db2.put(null, kdbt, ddbt);
+
+				// to print out the key/data pair
+				// System.out.println(s);	
+
+				/* to generate a data string */
+				range = 64 + random.nextInt( 64 );
+				s = "";
+				for ( int j = 0; j < range; j++ ) {
+					s+=(new Character((char)(97+random.nextInt(26)))).toString();
+				}
+				
+				// System.out.println(s);
+				/* to create a DBT for data */
+				ddbt = new DatabaseEntry(s.getBytes());
+				ddbt.setSize(s.length()); 
+
+				/* to insert the key/data pair into the database */
+				db1.putNoOverwrite(null, kdbt, ddbt);
+			}
 		}
 		catch (DatabaseException dbe) {
 			System.err.println("Populate the table: "+dbe.toString());
