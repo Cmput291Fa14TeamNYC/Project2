@@ -27,13 +27,20 @@ public class DataSource {
 
 	// Method: createDatabase()
 	// >> create database object
-	public void createDatabase() {
+	public void createDatabase(String type) {
 		try {
 
 			// Create the database object.
 			// There is no environment for this simple example.
 			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setType(DatabaseType.BTREE);
+			if(type.equals("btree")){
+				dbConfig.setType(DatabaseType.BTREE);
+				System.out.println("Btree");
+			} else if(type.equals("hash")){
+				dbConfig.setType(DatabaseType.HASH);
+				System.out.println("Hash");
+			}
+			
 			dbConfig.setAllowCreate(true);
 			my_table = new Database(SAMPLE_TABLE, null, dbConfig);
 			System.out.println(SAMPLE_TABLE + " has been created");
@@ -163,9 +170,7 @@ public class DataSource {
 	// >> retrieve records with a given data
 	public void searchByData(String input) {
 		/*
-		 * BUG!
-		 * Only work for TEST_DATA
-		 * How do you get the TEST_DATA?
+		 * BUG! Only work for TEST_DATA How do you get the TEST_DATA?
 		 */
 		try {
 			Cursor cursor = my_table.openCursor(null, null);
@@ -199,10 +204,10 @@ public class DataSource {
 		}
 	}
 
-	// Method: rangeSearch
+	// Method: rangeSearchHash
 	// >> find all the records whose key values are within a given range
-	// and return the number of records
-	public void rangeSearch(String UPPER_RANGE, String LOWER_RANGE) {
+	// and return the number of records for hash
+	public void rangeSearchHash(String lower, String upper) {
 		try {
 			Cursor cursor = my_table.openCursor(null, null);
 			key = new DatabaseEntry();
@@ -213,8 +218,8 @@ public class DataSource {
 
 			while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 				String printKey = new String(key.getData());
-				if ((printKey.compareTo(UPPER_RANGE) > 0)
-						&& (printKey.compareTo(LOWER_RANGE) < 0)) {
+				if ((printKey.compareTo(upper) > 0)
+						&& (printKey.compareTo(lower) < 0)) {
 					System.out
 							.println("Found key in Range Search: " + printKey);
 					counter++;
@@ -227,6 +232,54 @@ public class DataSource {
 			long duration = (endTime - startTime) / 1000;
 			System.out
 					.println("Time to execute: " + duration + " microseconds");
+
+			cursor.close();
+		} catch (Exception e1) {
+			System.err.println("Test failed: " + e1.toString());
+		}
+	}
+
+	public void rangeSearchBtree(String lower, String upper) {
+		try {
+			Cursor cursor = my_table.openCursor(null, null);
+			key = new DatabaseEntry();
+			data = new DatabaseEntry();
+			key.setData(lower.getBytes());
+			key.setSize(lower.length());
+			
+			int counter = 0;
+			long startTime = System.nanoTime();
+
+			if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+				// Print first match
+				String printKey = new String(key.getData());
+				System.out
+						.println("Found key in New Range Search: " + printKey);
+				counter++;
+
+				// Find all next matches
+				key = new DatabaseEntry();
+				data = new DatabaseEntry();
+				while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+					printKey = new String(key.getData());
+
+					if ((printKey.compareTo(lower) > 0)
+							&& (printKey.compareTo(upper) < 0)) {
+						System.out.println("Found key in Range Search: "
+								+ printKey);
+						counter++;
+					} else {
+						break;
+					}
+				}
+
+			}
+
+			System.out.println("Keys found: " + counter);
+			long endTime = System.nanoTime();
+			long duration = (endTime - startTime) / 1000;
+			System.out.println("Time to execute: " + duration
+					+ " microseconds\n");
 
 			cursor.close();
 		} catch (Exception e1) {
