@@ -1,6 +1,10 @@
 package yunita;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -11,16 +15,34 @@ public class DataSource {
 	private static final String SAMPLE_TABLE = "/Users/Yunita/My Documents/temp";
 	private static final int NO_RECORDS = 100000;
 
+	// database properties
 	private Database my_table = null;
 	private DatabaseEntry key = null;
 	private DatabaseEntry data = null;
 
 	private String[] keyValues;
 	private String[] dataValues;
-
 	private int randKeyValue1;
 
+	// I/O properties
+	private File file = null;
+	private FileWriter fw = null;
+	private BufferedWriter bw = null;
+
 	public DataSource() {
+		try {
+			file = new File("answer.txt");
+
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsolutePath());
+			bw = new BufferedWriter(fw);
+
+		} catch (IOException e) {
+			System.out.println("Cannot write a file.");
+		}
 
 	}
 
@@ -34,10 +56,10 @@ public class DataSource {
 			DatabaseConfig dbConfig = new DatabaseConfig();
 			if (type.equals("btree")) {
 				dbConfig.setType(DatabaseType.BTREE);
-				System.out.println("Btree");
+				System.out.println("B-TREE");
 			} else if (type.equals("hash")) {
 				dbConfig.setType(DatabaseType.HASH);
-				System.out.println("Hash");
+				System.out.println("HASH");
 			}
 
 			dbConfig.setAllowCreate(true);
@@ -139,6 +161,8 @@ public class DataSource {
 	// >> retrieve records with a given key
 	public void searchByKey(String input) {
 		try {
+			String result = "";
+
 			key = new DatabaseEntry();
 			data = new DatabaseEntry();
 			key.setData(input.getBytes());
@@ -159,7 +183,16 @@ public class DataSource {
 				long duration = (endTime - startTime) / 1000;
 				System.out.println("Time to execute: " + duration
 						+ " microseconds");
+
+				// write result into file
+				bw.write("SEARCH BY KEY (key -> data)\n" + "time: " + duration
+						+ " microsecs | " + input + " -> " + b + "\n");
+				System.out
+						.println("Succesfully write the result into the file.");
+			} else {
+				System.out.println("Key not found");
 			}
+
 		} catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
 		}
@@ -169,6 +202,7 @@ public class DataSource {
 	// >> retrieve records with a given data
 	public void searchByData(String input) {
 		try {
+			boolean isFound = false;
 			Cursor cursor = my_table.openCursor(null, null);
 
 			key = new DatabaseEntry();
@@ -180,14 +214,26 @@ public class DataSource {
 				String dataString = new String(data.getData());
 				if (dataString.equals(input)) {
 					long endTime = System.nanoTime();
-					System.out.println("Key | Data : " + keyString + " | "
-							+ dataString + "");
+					System.out.println("Key From Data Search Found: "
+							+ keyString);
 					long duration = (endTime - startTime) / 1000;
 					System.out.println("Time to execute: " + duration
-							+ " microseconds\n");
+							+ " microseconds");
+					isFound = true;
+
+					// write result into file
+					bw.write("SEARCH BY DATA (data -> key)\n" + "time: "
+							+ duration + " microsecs | " + input + " -> "
+							+ keyString + "\n");
+					System.out
+							.println("Succesfully write the result into the file.");
 				}
 				key = new DatabaseEntry();
 				data = new DatabaseEntry();
+			}
+
+			if (!isFound) {
+				System.out.println("Data not found.");
 			}
 
 			cursor.close();
@@ -234,6 +280,12 @@ public class DataSource {
 			System.out
 					.println("Time to execute: " + duration + " microseconds");
 
+			// write result into file
+			bw.write("SEARCH BY RANGE\n" + "time: " + duration
+					+ " microsecs | " + "lower: " + lower + " ,upper: " + upper
+					+ "\nKeys found: " + counter + "\n");
+			System.out.println("Succesfully write the result into the file.");
+
 			cursor.close();
 		} catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
@@ -245,47 +297,56 @@ public class DataSource {
 	// and return the number of records for btree
 	public void rangeSearchBtree(String lower, String upper) {
 		try {
-				Cursor cursor = my_table.openCursor(null, null);
-				key = new DatabaseEntry();
-			    data = new DatabaseEntry();
-				key.setData(lower.getBytes());
-		        key.setSize(lower.length());
-		        
-		        
-		        int counter = 0;
-		        long startTime = System.nanoTime();
-		        
-		        if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-		        	// Print first match
-		        	String printKey = new String(key.getData());
-		        	System.out.println("Found key in New Range Search: " + printKey);
-		        	counter++;
-				    
-		        	// Find all next matches
-		        	key = new DatabaseEntry();
-				    data = new DatabaseEntry();
-		        	while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-		        		printKey = new String(key.getData());
-		        		
-		        		if ( (printKey.compareTo(lower) > 0) && (printKey.compareTo(upper) < 0) ) {
-			        		System.out.println("Found key in New Range Search: " + printKey);
-			        		counter ++;
-			        	} else {
-			        		break;
-			        	}
-		        		
-		        		key = new DatabaseEntry();
-				        data = new DatabaseEntry();
-		        	}
-		        	
-		        }
-		        
-		        System.out.println("Keys found: " + counter);
-		        long endTime = System.nanoTime();
-		        long duration = (endTime - startTime) / 1000;
-		        System.out.println("Time to execute: " + duration + " microseconds");
+			Cursor cursor = my_table.openCursor(null, null);
+			key = new DatabaseEntry();
+			data = new DatabaseEntry();
+			key.setData(lower.getBytes());
+			key.setSize(lower.length());
 
-		        cursor.close();
+			int counter = 0;
+			long startTime = System.nanoTime();
+
+			if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+				// Print first match
+				String printKey = new String(key.getData());
+				System.out
+						.println("Found key in New Range Search: " + printKey);
+				counter++;
+
+				// Find all next matches
+				key = new DatabaseEntry();
+				data = new DatabaseEntry();
+				while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+					printKey = new String(key.getData());
+
+					if ((printKey.compareTo(lower) > 0)
+							&& (printKey.compareTo(upper) < 0)) {
+						System.out.println("Found key in New Range Search: "
+								+ printKey);
+						counter++;
+					} else {
+						break;
+					}
+
+					key = new DatabaseEntry();
+					data = new DatabaseEntry();
+				}
+
+			}
+
+			System.out.println("Keys found: " + counter);
+			long endTime = System.nanoTime();
+			long duration = (endTime - startTime) / 1000;
+			System.out
+					.println("Time to execute: " + duration + " microseconds");
+
+			// write result into file
+			bw.write("SEARCH BY RANGE\n" + "time: " + duration
+					+ " microsecs | " + "lower: " + lower + " ,upper: " + upper
+					+ "\nKeys found: " + counter + "\n");
+			System.out.println("Succesfully write the result into the file.");
+
+			cursor.close();
 		} catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
 		}
@@ -295,6 +356,9 @@ public class DataSource {
 	// >> close the database and the db environment and remove the table.
 	public void destroyDatabase() {
 		try {
+			/* close the writer */
+			bw.close();
+
 			/* close the database and the db environment */
 			my_table.close();
 
@@ -306,6 +370,8 @@ public class DataSource {
 			System.err.println("File not found: " + e.toString());
 		} catch (DatabaseException e) {
 			System.err.println("Closing database: " + e.toString());
+		} catch (IOException e) {
+			System.out.println("Cannot close the file.");
 		}
 	}
 

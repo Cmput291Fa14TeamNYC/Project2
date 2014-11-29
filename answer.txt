@@ -1,0 +1,12 @@
+SEARCH BY KEY (key -> data)
+time: 675 microsecs | ulbuhbzjnnkzexlokvmjgrqopykzzagwlakemrujwkziiqcaqewonmtqbkhwoxip -> urqnilycemxtrfivgzyffxfcnrjklttknsrynrlnbdvbchewtmvpkomhtjsesbqoljpnixu
+SEARCH BY KEY (key -> data)
+time: 29 microsecs | ulbuhbzjnnkzexlokvmjgrqopykzzagwlakemrujwkziiqcaqewonmtqbkhwoxip -> urqnilycemxtrfivgzyffxfcnrjklttknsrynrlnbdvbchewtmvpkomhtjsesbqoljpnixu
+SEARCH BY DATA (data -> key)
+time: 243499 microsecs | vlcgfbguffwikjqkviekcwgbkzcvvuovtolwxgznqwudxwodovlhwglbuqedvwnqntziybssilwwrpnfbkecaecvnrykkagqgubhawyjquapdzdjuriwpirlutiwi -> skgdteqgzrxpibhllsmliczfpfvqxxcybhwpzymdfsfohcmhgzorxfuvghgrtodvzpietd
+SEARCH BY RANGE
+time: 3969 microsecs | lower: jab ,upper: jax
+Keys found: 112
+SEARCH BY RANGE
+time: 124 microsecs | lower: lasd ,upper: dsa
+Keys found: 1
