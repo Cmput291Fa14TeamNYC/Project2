@@ -43,7 +43,6 @@ public class DataSource {
 		} catch (IOException e) {
 			System.out.println("Cannot write a file.");
 		}
-
 	}
 
 	// Method: createDatabase()
@@ -57,9 +56,11 @@ public class DataSource {
 			if (type.equals("btree")) {
 				dbConfig.setType(DatabaseType.BTREE);
 				System.out.println("B-TREE");
+				bw.write("B-TREE\n");
 			} else if (type.equals("hash")) {
 				dbConfig.setType(DatabaseType.HASH);
 				System.out.println("HASH");
+				bw.write("HASH\n");
 			}
 
 			dbConfig.setAllowCreate(true);
@@ -161,8 +162,6 @@ public class DataSource {
 	// >> retrieve records with a given key
 	public void searchByKey(String input) {
 		try {
-			String result = "";
-
 			key = new DatabaseEntry();
 			data = new DatabaseEntry();
 			key.setData(input.getBytes());
@@ -263,10 +262,9 @@ public class DataSource {
 
 			while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 				String printKey = new String(key.getData());
-				if ((printKey.compareTo(lower) > 0)
-						&& (printKey.compareTo(upper) < 0)) {
-					System.out
-							.println("Found key in Range Search: " + printKey);
+				if ((printKey.compareTo(lower) >= 0)
+						&& (printKey.compareTo(upper) <= 0)) {
+					//System.out.println("Found key in Range Search: " + printKey);
 					counter++;
 				}
 				key = new DatabaseEntry();
@@ -309,8 +307,7 @@ public class DataSource {
 			if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 				// Print first match
 				String printKey = new String(key.getData());
-				System.out
-						.println("Found key in New Range Search: " + printKey);
+				//System.out.println("Found key in New Range Search: " + printKey);
 				counter++;
 
 				// Find all next matches
@@ -319,10 +316,9 @@ public class DataSource {
 				while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 					printKey = new String(key.getData());
 
-					if ((printKey.compareTo(lower) > 0)
-							&& (printKey.compareTo(upper) < 0)) {
-						System.out.println("Found key in New Range Search: "
-								+ printKey);
+					if ((printKey.compareTo(lower) >= 0)
+							&& (printKey.compareTo(upper) <= 0)) {
+					//System.out.println("Found key in New Range Search: "+ printKey);
 						counter++;
 					} else {
 						break;

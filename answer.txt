@@ -1,12 +1,9 @@
+INDEX TABLE
 SEARCH BY KEY (key -> data)
-time: 675 microsecs | ulbuhbzjnnkzexlokvmjgrqopykzzagwlakemrujwkziiqcaqewonmtqbkhwoxip -> urqnilycemxtrfivgzyffxfcnrjklttknsrynrlnbdvbchewtmvpkomhtjsesbqoljpnixu
-SEARCH BY KEY (key -> data)
-time: 29 microsecs | ulbuhbzjnnkzexlokvmjgrqopykzzagwlakemrujwkziiqcaqewonmtqbkhwoxip -> urqnilycemxtrfivgzyffxfcnrjklttknsrynrlnbdvbchewtmvpkomhtjsesbqoljpnixu
+time: 702 microsecs | ryuyrizgoaodfvlcagfjroxakfwbsnhtkvsqvrvnrubbvaavigptpbtokzmnykdwq -> caohbnfcbgdwgatgmjwvjqeeyipzmuygnvulizciorqrbpyutagruypzccynvqypydfsunizgxssurqjaqjdcennwpjgynvmpmpslkhvowznnhtgbylvydojiwnie
 SEARCH BY DATA (data -> key)
-time: 243499 microsecs | vlcgfbguffwikjqkviekcwgbkzcvvuovtolwxgznqwudxwodovlhwglbuqedvwnqntziybssilwwrpnfbkecaecvnrykkagqgubhawyjquapdzdjuriwpirlutiwi -> skgdteqgzrxpibhllsmliczfpfvqxxcybhwpzymdfsfohcmhgzorxfuvghgrtodvzpietd
+caohbnfcbgdwgatgmjwvjqeeyipzmuygnvulizciorqrbpyutagruypzccynvqypydfsunizgxssurqjaqjdcennwpjgynvmpmpslkhvowznnhtgbylvydojiwnie -> ryuyrizgoaodfvlcagfjroxakfwbsnhtkvsqvrvnrubbvaavigptpbtokzmnykdwq
+time: 154 microsec
 SEARCH BY RANGE
-time: 3969 microsecs | lower: jab ,upper: jax
+time: 1211 microsecs | lower: jab ,upper: jax
 Keys found: 112
-SEARCH BY RANGE
-time: 124 microsecs | lower: lasd ,upper: dsa
-Keys found: 1

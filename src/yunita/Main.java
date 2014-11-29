@@ -5,7 +5,15 @@ import java.util.*;
 public class Main {
 
 	public Main(String args) {
-		DataSource ds = new DataSource();
+		DataSource ds = null;
+		IndexFile in = null;
+
+		if (args.equals("indexfile")) {
+			in = new IndexFile();
+		} else {
+			ds = new DataSource();
+		}
+
 		while (true) {
 			try {
 				this.displayMenus();
@@ -16,29 +24,48 @@ public class Main {
 				switch (input) {
 				case 1:
 					System.out.println("1 Create and populate a database");
-					ds.createDatabase(args);
+					if (args.equals("indexfile")) {
+						in.createDatabase();
+					} else {
+						ds.createDatabase(args);
+					}
 					break;
 				case 2:
 					System.out.println("2 Retrieve records with a given key");
 					System.out
 							.println("Automatic random generate key -> value: ");
-					ds.printKeyData();
-
+					if (args.equals("indexfile")) {
+						in.printKeyData();
+					} else {
+						ds.printKeyData();
+					}
 					System.out.print("Enter key >> ");
 					Scanner s3 = new Scanner(System.in);
 					String input2 = s3.nextLine();
-					ds.searchByKey(input2);
+					if (args.equals("indexfile")) {
+						in.searchByKey(input2);
+						;
+					} else {
+						ds.searchByKey(input2);
+					}
 					break;
 				case 3:
 					System.out.println("3 Retrieve records with a given data");
 					System.out
 							.println("Automatic random generate key -> value: ");
-					ds.printKeyData();
-
+					if (args.equals("indexfile")) {
+						in.printKeyData();
+					} else {
+						ds.printKeyData();
+					}
 					System.out.print("Enter data >> ");
 					Scanner s4 = new Scanner(System.in);
 					String input3 = s4.nextLine();
-					ds.searchByData(input3);
+					if (args.equals("indexfile")) {
+						in.searchByData(input3);
+					} else {
+						ds.searchByData(input3);
+					}
 					break;
 				case 4:
 					System.out
@@ -52,16 +79,20 @@ public class Main {
 					String upper = s2.nextLine();
 
 					if (args.equals("btree")) {
-						System.out.println("BTREE SEARCH");
 						ds.rangeSearchBtree(lower, upper);
 					} else if (args.equals("hash")) {
-						System.out.println("HASH SEARCH");
 						ds.rangeSearchHash(lower, upper);
+					} else {
+						in.rangeSearchIndexFile(lower, upper);
 					}
 					break;
 				case 5:
 					System.out.println("5. Destroy the database");
-					ds.destroyDatabase();
+					if (args.equals("indexfile")) {
+						in.destroyDatabase();
+					} else {
+						ds.destroyDatabase();
+					}
 					break;
 				case 6:
 					System.out.println("6. Quit");
@@ -84,6 +115,10 @@ public class Main {
 		for (String menu : menus) {
 			System.out.println(menu);
 		}
+	}
+
+	public void generateRandomKeyData() {
+
 	}
 
 	public static void main(String[] args) {
