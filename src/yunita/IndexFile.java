@@ -62,7 +62,6 @@ public class IndexFile {
 			// Create the database object.
 			// There is no environment for this simple example.
 			System.out.println("INDEX FILE");
-			bw.write("INDEX TABLE\n");
 
 			DatabaseConfig dbConfig = new DatabaseConfig();
 			dbConfig.setType(DatabaseType.BTREE);
@@ -182,6 +181,7 @@ public class IndexFile {
 	public void searchByKey(String input) {
 		try {
 			String result = "";
+			int count = 0;
 
 			key = new DatabaseEntry();
 			data = new DatabaseEntry();
@@ -204,15 +204,14 @@ public class IndexFile {
 				System.out.println("Time to execute: " + duration
 						+ " microseconds");
 
+				count++;
+				
 				// write result into file
-				bw.write("SEARCH BY KEY (key -> data)\n" + "time: " + duration
-						+ " microsecs | " + input + " -> " + b + "\n");
+				bw.write(input +"\n" + b + "\n\n");
 				System.out
 						.println("Succesfully write the result into the file.");
-			} else {
-				System.out.println("Key not found");
 			}
-
+			System.out.println("Key found: " + count);
 		} catch (Exception e1) {
 			System.err.println("Test failed: " + e1.toString());
 		}
@@ -256,7 +255,7 @@ public class IndexFile {
 					data = new DatabaseEntry();
 				}
 				isFound = true;
-				result += input + " -> " + printData + "\n";
+				result +=  printData+ "\n" + input + "\n\n";
 			}
 			System.out.println("Datas found in IndexFile Data Search: "
 					+ counter);
@@ -270,8 +269,7 @@ public class IndexFile {
 				System.out.println("Data not found.");
 			} else {
 				// write the result into file
-				bw.write("SEARCH BY DATA (data -> key)\n" + result + "time: "
-						+ duration + " microsec\n");
+				bw.write(result);
 				System.out
 						.println("Succesfully write the result into the file.");
 			}
@@ -283,6 +281,8 @@ public class IndexFile {
 
 	public void rangeSearchIndexFile(String lower, String upper) {
 		try {
+			String result = "";
+			
 			Cursor cursor = my_table.openCursor(null, null);
 			key = new DatabaseEntry();
 			data = new DatabaseEntry();
@@ -295,6 +295,7 @@ public class IndexFile {
 			if (cursor.getSearchKeyRange(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 				// Print first match
 				String printKey = new String(key.getData());
+				String printData = new String(data.getData());
 				System.out
 						.println("Found key in New Range Search: " + printKey);
 				counter++;
@@ -304,11 +305,12 @@ public class IndexFile {
 				data = new DatabaseEntry();
 				while (cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
 					printKey = new String(key.getData());
-
+					printData = new String(data.getData());
 					if ((printKey.compareTo(lower) >= 0)
 							&& (printKey.compareTo(upper) <= 0)) {
 						//System.out.println("Found key in New Range Search: "+ printKey);
 						counter++;
+						result += printKey + "\n" + printData + "\n\n";
 					} else {
 						break;
 					}
@@ -326,9 +328,7 @@ public class IndexFile {
 					.println("Time to execute: " + duration + " microseconds");
 
 			// write result into file
-			bw.write("SEARCH BY RANGE\n" + "time: " + duration
-					+ " microsecs | " + "lower: " + lower + " ,upper: " + upper
-					+ "\nKeys found: " + counter + "\n");
+			bw.write(result);
 			System.out.println("Succesfully write the result into the file.");
 
 			cursor.close();
