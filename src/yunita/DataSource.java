@@ -31,7 +31,7 @@ public class DataSource {
 
 	public DataSource() {
 		try {
-			file = new File("answer.txt");
+			file = new File("answers");
 
 			if (!file.exists()) {
 				file.createNewFile();

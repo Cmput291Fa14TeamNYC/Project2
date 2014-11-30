@@ -40,7 +40,7 @@ public class IndexFile {
 
 	public IndexFile() {
 		try {
-			file = new File("answer.txt");
+			file = new File("answers");
 
 			if (!file.exists()) {
 				file.createNewFile();
