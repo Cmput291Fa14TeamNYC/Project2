@@ -1,4 +1,4 @@
 #!/bin/bash
 
-java -cp . Main "$@"
+java Main "$@"
 
